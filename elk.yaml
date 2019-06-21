@@ -1,0 +1,16 @@
+---
+
+- name: Preconfiguration of the instance
+  hosts: server_ip
+  become: True
+  gather_facts: False
+  roles:
+    - role: pre_configure
+
+- name: Deploy ELK stack to the server
+  hosts: server_ip
+  become: True
+  gather_facts: True
+  roles:
+    - role: configure
+    - role: elk_run
