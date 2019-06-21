@@ -1,0 +1,69 @@
+---
+
+- name: Upload logstash config file
+  become: yes
+  become_user: root
+  template:
+    src: logstash.conf.j2
+    dest: "{{ LOGSTASH_CONF_FILE_PATH }}"
+  when: LOGSTASH_CONF_FILE_PATH|length > 0
+  tags: 
+    - upload-config
+
+- name: Run ELK stack in docker containers
+  become: yes
+  become_user: root
+  docker_service:
+    project_name: ELK
+    definition:
+      version: '2'
+      services:
+        elasticsearch:
+          image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+          container_name: elasticsearch-container
+          hostname: elasticsearch-server
+          networks:
+            - web_nw
+          expose:
+            - "9200"
+            - "9300"
+          ports:
+            - "9200:9200"
+            - "9300:9300"
+          restart: always
+        logstash:
+          image: docker.elastic.co/logstash/logstash:7.1.1
+          hostname: logstash-server
+          container_name: logstash-container
+          volumes:
+            - "{{LOGSTASH_CONF_FILE_PATH}}:/config-dir/logstash.cfg"
+          command: logstash -f /config-dir/logstash.conf
+          networks:
+            - web_nw
+          expose:
+            - "5959"
+          ports:
+            - "5959:5959"
+          restart: always
+        kibana:
+          image: docker.elastic.co/kibana/kibana:6.4.2
+          container_name: kibana-container
+          hostname: kibana-server
+          depends_on:
+            - elasticsearch
+            - logstash
+          networks:
+            - web_nw
+          expose:
+            - "5601"
+          ports:
+            - "5601:5601"
+          restart: always
+      networks:
+        web_nw:
+          driver: bridge
+  
+  register: output
+
+#- debug:
+#    var: output

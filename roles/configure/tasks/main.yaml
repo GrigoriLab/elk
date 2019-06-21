@@ -1,0 +1,56 @@
+---
+
+- name: Install project prerequisites
+  apt: name={{item}} update_cache=yes
+  become: yes
+  become_user: root
+  with_items:
+    - python-pip
+    - python-dev
+  tags: 
+    - configure 
+    - deploy-all
+
+- pip:
+    name:
+            #- docker
+      - docker-py
+  tags:
+    - configure
+    - docker
+
+- name: Add Docker GPG key
+  apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+  become: yes
+  become_user: root
+  tags:
+    - configure
+    - docker
+
+- name:    Add Docker APT repository
+  become: yes
+  become_user: root
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+  tags:
+    - configure
+    - docker
+
+- name: Install Docker
+  become: yes
+  become_user: root
+  apt: name=docker-ce update_cache=yes
+  tags: 
+    - configure
+    - docker
+
+- name: Install docker-compose
+  become: yes
+  become_user: root
+  apt:
+    name: docker-compose
+    state: present
+    update_cache: yes
+  tags: 
+    - configure
+    - docker
