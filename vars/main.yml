@@ -1,0 +1,2 @@
+
+LOGSTASH_CONF_FILE_PATH: /home/{{ ansible_ssh_user }}/logstash.cfg
