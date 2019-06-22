@@ -1,15 +1,5 @@
 ---
 
-- name: Upload logstash config file
-  become: yes
-  become_user: root
-  template:
-    src: logstash.conf.j2
-    dest: "{{ LOGSTASH_CONF_FILE_PATH }}"
-  when: LOGSTASH_CONF_FILE_PATH|length > 0
-  tags: 
-    - upload-config
-
 - name: Run ELK stack in docker containers
   become: yes
   become_user: root
@@ -26,6 +16,3 @@
             - "5044:5044"
   
   register: output
-
-#- debug:
-#    var: output
